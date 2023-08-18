@@ -1,6 +1,6 @@
-Dataset **Piling sheet image data** can be downloaded in Supervisely format:
+Dataset **Piling Sheet Image Data** can be downloaded in [Supervisely format](https://developer.supervisely.com/api-references/supervisely-annotation-json-format):
 
- [Download](https://assets.supervisely.com/supervisely-supervisely-assets-public/teams_storage/Z/3/vc/EEjRSq8W6Dr13BV1QfW1iIl2jMgFBbI56T5oPtQL8xGtsxQlngmSzwVzN96kgjRiTwc02VqP21glytWSuIXUg6179WmXYlwpAguMRvxsOcrbMWaaPqaT8pRicbuJ.tar)
+ [Download](https://assets.supervisely.com/supervisely-supervisely-assets-public/teams_storage/T/B/An/pxuRYwAZCdCu8D9z3mtEXlM4BY04xAcdjipB1Vl56xOckuHDvPsz2M3RUQqeCsDLFAhOh1sg5ONV57ZIJ5JRaLusAdn53NjxW6CksF0ftrhhMU52kQNFPTlRjg9W.tar)
 
 As an alternative, it can be downloaded with *dataset-tools* package:
 ``` bash
@@ -11,6 +11,8 @@ pip install --upgrade dataset-tools
 ``` python
 import dataset_tools as dtools
 
-dtools.download(dataset='Piling sheet image data', dst_path='~/dtools/datasets/Piling sheet image data.tar')
+dtools.download(dataset='Piling Sheet Image Data', dst_dir='~/dataset-ninja/')
 ```
-The data in original format can be 🔗[downloaded here](https://www.kaggle.com/datasets/richiemaskam/piling-sheet-data-2022/download?datasetVersionNumber=1)
+Make sure not to overlook the [python code example](https://developer.supervisely.com/getting-started/python-sdk-tutorials/iterate-over-a-local-project) available on the Supervisely Developer Portal. It will give you a clear idea of how to effortlessly work with the downloaded dataset.
+
+The data in original format can be [downloaded here](https://www.kaggle.com/datasets/richiemaskam/piling-sheet-data-2022/download?datasetVersionNumber=1).
