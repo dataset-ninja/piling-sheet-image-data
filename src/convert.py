@@ -58,84 +58,119 @@ import src.settings as s
 #         dataset_path = storage_dir
 #     return dataset_path
 
+# https://www.kaggle.com/datasets/richiemaskam/piling-sheet-data-2022
+
+import os, glob
+import numpy as np
+import supervisely as sly
+from supervisely.io.fs import get_file_name, file_exists, get_file_ext, dir_exists
+from dotenv import load_dotenv
+
+
+# if sly.is_development():
+# load_dotenv("local.env")
+# load_dotenv(os.path.expanduser("~/supervisely.env"))
+
+# api = sly.Api.from_env()
+# team_id = sly.env.team_id()
+# workspace_id = sly.env.workspace_id()
+
+
+project_name = "piling-sheet-data-2022"
+dataset_path = "APP_DATA/archive/02-Object_detection_data/02-Object_detection_data"
+batch_size = 30
+images_ext = ".jpg"
+bboxes_ext = ".txt"
+test_data_path = (
+    "APP_DATA/archive/03-Model_Test/03-Model_Test"
+)
+
 
 def convert_and_upload_supervisely_project(
     api: sly.Api, workspace_id: int, project_name: str
 ) -> sly.ProjectInfo:
-    pass
 
 
-#     dataset_path = "/home/iwatkot/supervisely/ninja-datasets/piling-sheet-image-data/02-Object_detection_data/02-Object_detection_data"
-#     batch_size = 30
-#     images_ext = ".jpg"
+def create_ann(image_path):
+    labels = []
 
-#     def create_ann(image_path):
-#         labels = []
+    image_np = sly.imaging.image.read(image_path)[:, :, 0]
+    img_height = image_np.shape[0]
+    img_wight = image_np.shape[1]
 
-#         image_np = sly.imaging.image.read(image_path)[:, :, 0]
-#         img_height = image_np.shape[0]
-#         img_wight = image_np.shape[1]
+    bbox_name = get_file_name(image_path) + ".txt"
+    bbox_path = os.path.join(curr_data_path, bbox_name)
+    if file_exists(bbox_path):
+        with open(bbox_path) as f:
+            content = f.read().split("\n")
 
-#         bbox_name = get_file_name(image_path) + ".txt"
-#         bbox_path = os.path.join(curr_data_path, bbox_name)
-#         if file_exists(bbox_path):
-#             with open(bbox_path) as f:
-#                 content = f.read().split("\n")
+            for curr_data in content:
+                if len(curr_data) != 0:
+                    curr_data = list(map(float, curr_data.split(" ")))
+                    obj_class = idx_to_obj_class[int(curr_data[0])]
 
-#                 for curr_data in content:
-#                     if len(curr_data) != 0:
-#                         curr_data = list(map(float, curr_data.split(" ")))
-#                         obj_class = idx_to_obj_class[int(curr_data[0])]
+                    left = int((curr_data[1] - curr_data[3] / 2) * img_wight)
+                    right = int((curr_data[1] + curr_data[3] / 2) * img_wight)
+                    top = int((curr_data[2] - curr_data[4] / 2) * img_height)
+                    bottom = int((curr_data[2] + curr_data[4] / 2) * img_height)
+                    rectangle = sly.Rectangle(top=top, left=left, bottom=bottom, right=right)
+                    label = sly.Label(rectangle, obj_class)
+                    labels.append(label)
 
-#                         left = int((curr_data[1] - curr_data[3] / 2) * img_wight)
-#                         right = int((curr_data[1] + curr_data[3] / 2) * img_wight)
-#                         top = int((curr_data[2] - curr_data[4] / 2) * img_height)
-#                         bottom = int((curr_data[2] + curr_data[4] / 2) * img_height)
-#                         rectangle = sly.Rectangle(top=top, left=left, bottom=bottom, right=right)
-#                         label = sly.Label(rectangle, obj_class)
-#                         labels.append(label)
+    return sly.Annotation(img_size=(img_height, img_wight), labels=labels)
 
-#         return sly.Annotation(img_size=(img_height, img_wight), labels=labels)
 
-#     idx_to_obj_class = {
-#         0: sly.ObjClass("Dim", sly.Rectangle),
-#         1: sly.ObjClass("Ref", sly.Rectangle),
-#     }
+idx_to_obj_class = {
+    0: sly.ObjClass("Dim", sly.Rectangle),
+    1: sly.ObjClass("Ref", sly.Rectangle),
+}
 
-#     obj_classes = list(idx_to_obj_class.values())
+obj_classes = list(idx_to_obj_class.values())
 
-#     project = api.project.create(workspace_id, project_name, change_name_if_conflict=True)
-#     meta = sly.ProjectMeta(obj_classes=obj_classes)
-#     api.project.update_meta(project.id, meta.to_json())
+project = api.project.create(workspace_id, project_name, change_name_if_conflict=True)
+meta = sly.ProjectMeta(obj_classes=obj_classes)
+api.project.update_meta(project.id, meta.to_json())
 
-#     for curr_folder in os.listdir(dataset_path):
-#         ds_name = curr_folder[4:]
 
-#         dataset = api.dataset.create(project.id, ds_name, change_name_if_conflict=True)
+for curr_folder in os.listdir(dataset_path):
+    ds_name = curr_folder[4:]
 
-#         for curr_subfolder in os.listdir(os.path.join(dataset_path, curr_folder)):
-#             curr_data_path = os.path.join(dataset_path, curr_folder, curr_subfolder)
-#             if dir_exists(curr_data_path):
-#                 all_data = os.listdir(curr_data_path)
-#                 images_names = [
-#                     file_name for file_name in all_data if get_file_ext(file_name) == images_ext
-#                 ]
+    dataset = api.dataset.create(project.id, ds_name, change_name_if_conflict=True)
 
-#                 progress = sly.Progress("Create dataset {}".format(ds_name), len(images_names))
+    for curr_subfolder in os.listdir(os.path.join(dataset_path, curr_folder)):
+        curr_data_path = os.path.join(dataset_path, curr_folder, curr_subfolder)
+        if dir_exists(curr_data_path):
+            all_data = os.listdir(curr_data_path)
+            images_names = [
+                file_name for file_name in all_data if get_file_ext(file_name) == images_ext
+            ]
 
-#                 for img_names_batch in sly.batched(images_names, batch_size=batch_size):
-#                     images_pathes_batch = [
-#                         os.path.join(curr_data_path, image_name) for image_name in img_names_batch
-#                     ]
+            progress = sly.Progress("Create dataset {}".format(ds_name), len(images_names))
 
-#                     img_infos = api.image.upload_paths(
-#                         dataset.id, img_names_batch, images_pathes_batch
-#                     )
-#                     img_ids = [im_info.id for im_info in img_infos]
+            for img_names_batch in sly.batched(images_names, batch_size=batch_size):
+                images_pathes_batch = [
+                    os.path.join(curr_data_path, image_name) for image_name in img_names_batch
+                ]
 
-#                     anns_batch = [create_ann(image_path) for image_path in images_pathes_batch]
-#                     api.annotation.upload_anns(img_ids, anns_batch)
+                img_infos = api.image.upload_paths(dataset.id, img_names_batch, images_pathes_batch)
+                img_ids = [im_info.id for im_info in img_infos]
 
-#                     progress.iters_done_report(len(img_names_batch))
+                anns_batch = [create_ann(image_path) for image_path in images_pathes_batch]
+                api.annotation.upload_anns(img_ids, anns_batch)
 
-#     return project
+                progress.iters_done_report(len(img_names_batch))
+
+ds_name = "test"
+dataset = api.dataset.create(project.id, ds_name, change_name_if_conflict=True)
+images_names = os.listdir(test_data_path)
+progress = sly.Progress("Create dataset {}".format(ds_name), len(images_names))
+for img_names_batch in sly.batched(images_names, batch_size=batch_size):
+    images_pathes_batch = [
+        os.path.join(test_data_path, image_name) for image_name in img_names_batch
+    ]
+
+    img_infos = api.image.upload_paths(dataset.id, img_names_batch, images_pathes_batch)
+    img_ids = [im_info.id for im_info in img_infos]
+
+    progress.iters_done_report(len(img_names_batch))
+    return project

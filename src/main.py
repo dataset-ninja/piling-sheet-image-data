@@ -24,7 +24,8 @@ def get_project_info(api: sly.Api):
     s.check_names()
 
     project_info = api.project.get_info_by_name(WORKSPACE_ID, s.PROJECT_NAME)
-    if not project_info:
+    # if not project_info:
+    if True:
         # If project doesn't found on instance, create it and use new project info.
         sly.logger.info(f"Project {s.PROJECT_NAME} not found on instance. Creating a new one...")
         project_info = convert_and_upload_supervisely_project(api, WORKSPACE_ID, s.PROJECT_NAME)
@@ -65,7 +66,7 @@ if __name__ == "__main__":
     force_stats = forces.get("force_stats")
     force_visuals = forces.get("force_visuals")
     force_texts = forces.get("force_texts")
-    settings['force_texts'] = force_texts
+    settings["force_texts"] = force_texts
     project_repo = ProjectRepo(api, project_id, settings)
     project_repo.build_stats(force=force_stats, settings=stat_options)
     project_repo.build_visualizations(force=force_visuals, settings=vis_options)
