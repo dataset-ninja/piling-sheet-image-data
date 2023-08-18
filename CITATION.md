@@ -12,4 +12,4 @@ doi = "10.4121/21387930.v1"
 
 ```
 
-[🔗 Source](https://www.kaggle.com/datasets/richiemaskam/piling-sheet-data-2022)
+[Source](https://www.kaggle.com/datasets/richiemaskam/piling-sheet-data-2022)
