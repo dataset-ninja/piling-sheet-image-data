@@ -1,8 +1,11 @@
+import glob
 import os
 from urllib.parse import unquote, urlparse
 
+import numpy as np
 import supervisely as sly
 from dataset_tools.convert import unpack_if_archive
+from dotenv import load_dotenv
 from supervisely.io.fs import (
     dir_exists,
     file_exists,
@@ -60,12 +63,6 @@ import src.settings as s
 
 # https://www.kaggle.com/datasets/richiemaskam/piling-sheet-data-2022
 
-import os, glob
-import numpy as np
-import supervisely as sly
-from supervisely.io.fs import get_file_name, file_exists, get_file_ext, dir_exists
-from dotenv import load_dotenv
-
 
 # if sly.is_development():
 # load_dotenv("local.env")
@@ -81,96 +78,92 @@ dataset_path = "APP_DATA/archive/02-Object_detection_data/02-Object_detection_da
 batch_size = 30
 images_ext = ".jpg"
 bboxes_ext = ".txt"
-test_data_path = (
-    "APP_DATA/archive/03-Model_Test/03-Model_Test"
-)
+test_data_path = "APP_DATA/archive/03-Model_Test/03-Model_Test"
 
 
 def convert_and_upload_supervisely_project(
     api: sly.Api, workspace_id: int, project_name: str
 ) -> sly.ProjectInfo:
+    def create_ann(image_path):
+        labels = []
 
+        image_np = sly.imaging.image.read(image_path)[:, :, 0]
+        img_height = image_np.shape[0]
+        img_wight = image_np.shape[1]
 
-def create_ann(image_path):
-    labels = []
+        bbox_name = get_file_name(image_path) + ".txt"
+        bbox_path = os.path.join(curr_data_path, bbox_name)
+        if file_exists(bbox_path):
+            with open(bbox_path) as f:
+                content = f.read().split("\n")
 
-    image_np = sly.imaging.image.read(image_path)[:, :, 0]
-    img_height = image_np.shape[0]
-    img_wight = image_np.shape[1]
+                for curr_data in content:
+                    if len(curr_data) != 0:
+                        curr_data = list(map(float, curr_data.split(" ")))
+                        obj_class = idx_to_obj_class[int(curr_data[0])]
 
-    bbox_name = get_file_name(image_path) + ".txt"
-    bbox_path = os.path.join(curr_data_path, bbox_name)
-    if file_exists(bbox_path):
-        with open(bbox_path) as f:
-            content = f.read().split("\n")
+                        left = int((curr_data[1] - curr_data[3] / 2) * img_wight)
+                        right = int((curr_data[1] + curr_data[3] / 2) * img_wight)
+                        top = int((curr_data[2] - curr_data[4] / 2) * img_height)
+                        bottom = int((curr_data[2] + curr_data[4] / 2) * img_height)
+                        rectangle = sly.Rectangle(top=top, left=left, bottom=bottom, right=right)
+                        label = sly.Label(rectangle, obj_class)
+                        labels.append(label)
 
-            for curr_data in content:
-                if len(curr_data) != 0:
-                    curr_data = list(map(float, curr_data.split(" ")))
-                    obj_class = idx_to_obj_class[int(curr_data[0])]
+        return sly.Annotation(img_size=(img_height, img_wight), labels=labels)
 
-                    left = int((curr_data[1] - curr_data[3] / 2) * img_wight)
-                    right = int((curr_data[1] + curr_data[3] / 2) * img_wight)
-                    top = int((curr_data[2] - curr_data[4] / 2) * img_height)
-                    bottom = int((curr_data[2] + curr_data[4] / 2) * img_height)
-                    rectangle = sly.Rectangle(top=top, left=left, bottom=bottom, right=right)
-                    label = sly.Label(rectangle, obj_class)
-                    labels.append(label)
+    idx_to_obj_class = {
+        0: sly.ObjClass("Dim", sly.Rectangle),
+        1: sly.ObjClass("Ref", sly.Rectangle),
+    }
 
-    return sly.Annotation(img_size=(img_height, img_wight), labels=labels)
+    obj_classes = list(idx_to_obj_class.values())
 
+    project = api.project.create(workspace_id, project_name, change_name_if_conflict=True)
+    meta = sly.ProjectMeta(obj_classes=obj_classes)
+    api.project.update_meta(project.id, meta.to_json())
 
-idx_to_obj_class = {
-    0: sly.ObjClass("Dim", sly.Rectangle),
-    1: sly.ObjClass("Ref", sly.Rectangle),
-}
+    for curr_folder in os.listdir(dataset_path):
+        ds_name = curr_folder[4:]
 
-obj_classes = list(idx_to_obj_class.values())
+        dataset = api.dataset.create(project.id, ds_name, change_name_if_conflict=True)
 
-project = api.project.create(workspace_id, project_name, change_name_if_conflict=True)
-meta = sly.ProjectMeta(obj_classes=obj_classes)
-api.project.update_meta(project.id, meta.to_json())
-
-
-for curr_folder in os.listdir(dataset_path):
-    ds_name = curr_folder[4:]
-
-    dataset = api.dataset.create(project.id, ds_name, change_name_if_conflict=True)
-
-    for curr_subfolder in os.listdir(os.path.join(dataset_path, curr_folder)):
-        curr_data_path = os.path.join(dataset_path, curr_folder, curr_subfolder)
-        if dir_exists(curr_data_path):
-            all_data = os.listdir(curr_data_path)
-            images_names = [
-                file_name for file_name in all_data if get_file_ext(file_name) == images_ext
-            ]
-
-            progress = sly.Progress("Create dataset {}".format(ds_name), len(images_names))
-
-            for img_names_batch in sly.batched(images_names, batch_size=batch_size):
-                images_pathes_batch = [
-                    os.path.join(curr_data_path, image_name) for image_name in img_names_batch
+        for curr_subfolder in os.listdir(os.path.join(dataset_path, curr_folder)):
+            curr_data_path = os.path.join(dataset_path, curr_folder, curr_subfolder)
+            if dir_exists(curr_data_path):
+                all_data = os.listdir(curr_data_path)
+                images_names = [
+                    file_name for file_name in all_data if get_file_ext(file_name) == images_ext
                 ]
 
-                img_infos = api.image.upload_paths(dataset.id, img_names_batch, images_pathes_batch)
-                img_ids = [im_info.id for im_info in img_infos]
+                progress = sly.Progress("Create dataset {}".format(ds_name), len(images_names))
 
-                anns_batch = [create_ann(image_path) for image_path in images_pathes_batch]
-                api.annotation.upload_anns(img_ids, anns_batch)
+                for img_names_batch in sly.batched(images_names, batch_size=batch_size):
+                    images_pathes_batch = [
+                        os.path.join(curr_data_path, image_name) for image_name in img_names_batch
+                    ]
 
-                progress.iters_done_report(len(img_names_batch))
+                    img_infos = api.image.upload_paths(
+                        dataset.id, img_names_batch, images_pathes_batch
+                    )
+                    img_ids = [im_info.id for im_info in img_infos]
 
-ds_name = "test"
-dataset = api.dataset.create(project.id, ds_name, change_name_if_conflict=True)
-images_names = os.listdir(test_data_path)
-progress = sly.Progress("Create dataset {}".format(ds_name), len(images_names))
-for img_names_batch in sly.batched(images_names, batch_size=batch_size):
-    images_pathes_batch = [
-        os.path.join(test_data_path, image_name) for image_name in img_names_batch
-    ]
+                    anns_batch = [create_ann(image_path) for image_path in images_pathes_batch]
+                    api.annotation.upload_anns(img_ids, anns_batch)
 
-    img_infos = api.image.upload_paths(dataset.id, img_names_batch, images_pathes_batch)
-    img_ids = [im_info.id for im_info in img_infos]
+                    progress.iters_done_report(len(img_names_batch))
 
-    progress.iters_done_report(len(img_names_batch))
+    ds_name = "test"
+    dataset = api.dataset.create(project.id, ds_name, change_name_if_conflict=True)
+    images_names = os.listdir(test_data_path)
+    progress = sly.Progress("Create dataset {}".format(ds_name), len(images_names))
+    for img_names_batch in sly.batched(images_names, batch_size=batch_size):
+        images_pathes_batch = [
+            os.path.join(test_data_path, image_name) for image_name in img_names_batch
+        ]
+
+        img_infos = api.image.upload_paths(dataset.id, img_names_batch, images_pathes_batch)
+        img_ids = [im_info.id for im_info in img_infos]
+
+        progress.iters_done_report(len(img_names_batch))
     return project
