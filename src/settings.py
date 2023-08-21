@@ -15,7 +15,7 @@ from dataset_tools.templates import (
 ##################################
 PROJECT_NAME: str = "Piling Sheet Image Data"
 PROJECT_NAME_FULL: str = "Piling Sheet Image Data 2022"
-HIDE_DATASET = True  # set False when 100% sure about repo quality
+HIDE_DATASET = False  # set False when 100% sure about repo quality
 
 ##################################
 # * After uploading to instance ##
@@ -63,12 +63,19 @@ AUTHORS: Optional[List[str]] = [
     "Maarten Visser",
 ]
 
-ORGANIZATION_NAME: Optional[Union[str, List[str]]] = "Delft University of Technology, Netherlands"
-ORGANIZATION_URL: Optional[Union[str, List[str]]] = "https://www.tudelft.nl/en/"
+ORGANIZATION_NAME: Optional[Union[str, List[str]]] = [
+    "Delft University of Technology, Netherlands",
+    "Witteveen+Bos, Netherlands",
+]
+ORGANIZATION_URL: Optional[Union[str, List[str]]] = [
+    "https://www.tudelft.nl/en/",
+    "https://www.witteveenbos.com/nl/",
+]
 
 SLYTAGSPLIT: Optional[Dict[str, List[str]]] = None
 TAGS: List[str] = None
 
+SECTION_EXPLORE_CUSTOM_DATASETS: Optional[List[str]] = ["object detection train"]
 ##################################
 ###### ? Checks. Do not edit #####
 ##################################
@@ -114,4 +121,5 @@ def get_settings():
     settings["slytagsplit"] = SLYTAGSPLIT
     settings["tags"] = TAGS
 
+    settings["explore_datasets"] = SECTION_EXPLORE_CUSTOM_DATASETS
     return settings
