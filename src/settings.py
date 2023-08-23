@@ -24,7 +24,7 @@ LICENSE: License = License.CC_BY_4_0()
 APPLICATIONS: List[Union[Industry, Domain, Research]] = [Industry.Construction(is_used=False)]
 CATEGORY: Category = Category.Construction()
 
-CV_TASKS: List[CVTask] = [CVTask.ObjectDetection()]
+CV_TASKS: List[CVTask] = [CVTask.ObjectDetection(), CVTask.Classification()]
 ANNOTATION_TYPES: List[AnnotationType] = [AnnotationType.ObjectDetection()]
 
 RELEASE_DATE: Optional[str] = None  # e.g. "YYYY-MM-DD"
@@ -72,7 +72,17 @@ ORGANIZATION_URL: Optional[Union[str, List[str]]] = [
     "https://www.witteveenbos.com/nl/",
 ]
 
-SLYTAGSPLIT: Optional[Dict[str, List[str]]] = None
+SLYTAGSPLIT: Optional[Dict[str, List[str]]] = {
+    "classification set classes": ["4-grass", "4-metal_good", "4-metal_bad", "4-rock"],
+    "classification set classes (alternative)": [
+        "6-grass",
+        "6-metal_good",
+        "6-metal_bad",
+        "6-rock",
+        "6-metal_acceptable",
+        "6-metal_moderate",
+    ],
+}
 TAGS: List[str] = None
 
 SECTION_EXPLORE_CUSTOM_DATASETS: Optional[List[str]] = ["object detection train"]
