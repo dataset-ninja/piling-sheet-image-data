@@ -1,9 +1,9 @@
-Authors of the Piling Sheet Image Data are asessing the corrosion on piling sheet  and estimating distance between the bumps. Two classificiation algorithm have been made:
+Authors of the **Piling Sheet Image Data** are asessing the corrosion on piling sheet  and estimating distance between the bumps. Two classificiation algorithm have been made:
 
 1. Classification with ***4*** classes: ***grass***, ***metal_good***, ***metal_bad*** and ***rock***.
 2. Classification with ***6*** classes: ***grass***, ***metal_good***, ***metal_acceptable***, ***metal_moderate*** and ***metal_bad*** and ***rock***.
 
-These classes for corrosion were based on [Digigids](https://digigids.hetwaterschapshuis.nl/index.php?album=Bijzondere-constructies-%282019%29/damwand%20of%20beschoeiing/conditie). Grass and rock were included as there was a large amount of it in the raw data-set. See the image below for application of Digigids classes on piling sheet. [![Classes](https://github.com/Harsono-stack/Piling-sheet-assesment-/raw/main/Digiclasses.png)](https://github.com/Harsono-stack/Piling-sheet-assesment-/blob/main/Digiclasses.png) 
+These classes for corrosion were based on [Digigids](https://digigids.hetwaterschapshuis.nl/index.php?album=Bijzondere-constructies-%282019%29/damwand%20of%20beschoeiing/conditie). Grass and rock were included as there was a large amount of it in the raw data-set. See the image below for application of Digigids classes on piling sheet. [![Classes](https://github.com/Harsono-stack/Piling-sheet-assesment-/raw/main/Digiclasses.png)](https://github.com/Harsono-stack/Piling-sheet-assesment-/blob/main/Digiclasses.png)
 
 In the ***four*** class data-set, they combined the classes as:
 
