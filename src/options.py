@@ -57,7 +57,7 @@ CLASSES_PREVIEW_ROW_HEIGHT: int = None
 CLASSES_PREVIEW_PADDINGS: dict = None
 CLASSES_PREVIEW_ROWS: int = None
 CLASSES_PREVIEW_GAP: int = None
-CLASSES_PREVIEW_TAGS: int = ['dim', 'ref', 'grass', 'metal_good', 'metal_acceptable', 'metal_moderate', 'metal_bad', 'rock']
+CLASSES_PREVIEW_TAGS: int = None
 
 
 # default {"top": "10%", "bottom": "10%", "left": "10%", "right": "10%"}
