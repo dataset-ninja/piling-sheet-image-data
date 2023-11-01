@@ -62,6 +62,7 @@ AUTHORS: Optional[List[str]] = [
     "Mohammad Fotouhi",
     "Maarten Visser",
 ]
+AUTHORS_CONTACTS: Optional[List[str]] = ["Hrono04@pm.me", "https://www.linkedin.com/in/richie-maskam-40426931/"]
 
 ORGANIZATION_NAME: Optional[Union[str, List[str]]] = [
     "Delft University of Technology, Netherlands",
@@ -126,6 +127,7 @@ def get_settings():
     settings["paper"] = PAPER
     settings["citation_url"] = CITATION_URL
     settings["authors"] = AUTHORS
+    settings["authors_contacts"] = AUTHORS_CONTACTS
     settings["organization_name"] = ORGANIZATION_NAME
     settings["organization_url"] = ORGANIZATION_URL
     settings["slytagsplit"] = SLYTAGSPLIT
