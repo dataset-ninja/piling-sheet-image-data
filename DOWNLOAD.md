@@ -1,6 +1,6 @@
 Dataset **Piling Sheet Image Data** can be downloaded in [Supervisely format](https://developer.supervisely.com/api-references/supervisely-annotation-json-format):
 
- [Download](https://assets.supervisely.com/supervisely-supervisely-assets-public/teams_storage/y/V/kz/btZZ0Wot7s7HSYieki17CKMgcPjrodBUwdQr5DZm9oZQA9E7CPugOM28JmrnrdHG4Zk957ygZCfP2QhaQtz3HwPxxEsL0z0Fpbwl2XDhTsI019ojcz5W50XbgnSD.tar)
+ [Download](https://www.dropbox.com/scl/fi/qr9gxe2gq1mqbzdnjpy81/piling-sheet-image-data-DatasetNinja.tar?rlkey=v4zu2wxho2c7r40c3oadi2k1x&dl=1)
 
 As an alternative, it can be downloaded with *dataset-tools* package:
 ``` bash
